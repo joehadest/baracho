@@ -5,7 +5,7 @@ const navMenu = document.querySelector('.nav-menu');
 hamburger.addEventListener('click', () => {
     hamburger.classList.toggle('active');
     navMenu.classList.toggle('active');
-    
+
     // Prevenir scroll do body quando menu está aberto
     if (navMenu.classList.contains('active')) {
         document.body.style.overflow = 'hidden';
@@ -30,10 +30,66 @@ document.addEventListener('click', (e) => {
     }
 });
 
+// Funções de máscara para formatação de campos
+function maskCNPJ(value) {
+    return value
+        .replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1/$2')
+        .replace(/(\d{4})(\d)/, '$1-$2')
+        .replace(/(-\d{2})\d+?$/, '$1');
+}
+
+function maskPhone(value) {
+    return value
+        .replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{4})(\d)/, '$1-$2')
+        .replace(/(\d{4})-(\d)(\d{4})/, '$1$2-$3')
+        .replace(/(-\d{4})\d+?$/, '$1');
+}
+
+// Aplicar máscaras quando o DOM estiver carregado
+document.addEventListener('DOMContentLoaded', () => {
+    // Máscara para CNPJ
+    const cnpjInput = document.querySelector('input[name="cnpj"]');
+    if (cnpjInput) {
+        cnpjInput.addEventListener('input', (e) => {
+            e.target.value = maskCNPJ(e.target.value);
+        });
+    }
+
+    // Máscara para telefone
+    const telefoneInput = document.querySelector('input[name="telefone"]');
+    if (telefoneInput) {
+        telefoneInput.addEventListener('input', (e) => {
+            e.target.value = maskPhone(e.target.value);
+        });
+    }
+});
+
 // Header scroll effect
-window.addEventListener('scroll', () => {
+let headerTicking = false;
+
+function updateHeader() {
     const header = document.querySelector('.header');
-    header.classList.toggle('scrolled', window.scrollY > 100);
+    const scrolled = window.scrollY > 50;
+
+    if (scrolled) {
+        header.classList.add('scrolled');
+    } else {
+        header.classList.remove('scrolled');
+    }
+
+    headerTicking = false;
+}
+
+window.addEventListener('scroll', () => {
+    if (!headerTicking) {
+        requestAnimationFrame(updateHeader);
+        headerTicking = true;
+    }
 });
 
 // Smooth scrolling para links internos
@@ -44,7 +100,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         if (target) {
             const headerHeight = document.querySelector('.header').offsetHeight;
             const targetPosition = target.offsetTop - headerHeight - 20;
-            
+
             window.scrollTo({
                 top: targetPosition,
                 behavior: 'smooth'
@@ -76,16 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
 // Formulário de contato
 const contactForm = document.querySelector('.contact-form');
 if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+    contactForm.addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         // Simular envio do formulário
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.textContent;
-        
+
         submitBtn.textContent = 'Enviando...';
         submitBtn.disabled = true;
-        
+
         // Simular delay de envio
         setTimeout(() => {
             showNotification('Mensagem enviada com sucesso! Entraremos em contato em breve.', 'success');
@@ -101,7 +157,7 @@ function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
-    
+
     notification.style.cssText = `
         position: fixed;
         top: 20px;
@@ -116,9 +172,9 @@ function showNotification(message, type = 'info') {
         word-wrap: break-word;
         animation: slideInRight 0.3s ease-out;
     `;
-    
+
     document.body.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.animation = 'slideOutRight 0.3s ease-in';
         setTimeout(() => {
@@ -160,7 +216,7 @@ document.head.appendChild(style);
 function animateCounter(element, target, duration = 2000) {
     let start = 0;
     const increment = target / (duration / 16);
-    
+
     const timer = setInterval(() => {
         start += increment;
         if (start >= target) {
@@ -198,7 +254,7 @@ window.addEventListener('scroll', () => {
 
 // Tooltip para ícones de serviços
 document.querySelectorAll('.service-icon').forEach(icon => {
-    icon.addEventListener('mouseenter', function() {
+    icon.addEventListener('mouseenter', function () {
         const tooltip = document.createElement('div');
         tooltip.className = 'tooltip';
         tooltip.textContent = this.querySelector('i').className.split(' ')[1].replace('fa-', '');
@@ -216,11 +272,11 @@ document.querySelectorAll('.service-icon').forEach(icon => {
             left: 50%;
             transform: translateX(-50%);
         `;
-        
+
         this.appendChild(tooltip);
     });
-    
-    icon.addEventListener('mouseleave', function() {
+
+    icon.addEventListener('mouseleave', function () {
         const tooltip = this.querySelector('.tooltip');
         if (tooltip) {
             tooltip.remove();
@@ -257,15 +313,15 @@ window.addEventListener('load', () => {
 // Validação de formulário em tempo real
 const formInputs = document.querySelectorAll('.contact-form input, .contact-form textarea, .budget-form input, .budget-form select, .budget-form textarea');
 formInputs.forEach(input => {
-    input.addEventListener('blur', function() {
+    input.addEventListener('blur', function () {
         if (this.value.trim() === '') {
             this.style.borderColor = '#dc3545';
         } else {
             this.style.borderColor = '#28a745';
         }
     });
-    
-    input.addEventListener('input', function() {
+
+    input.addEventListener('input', function () {
         if (this.value.trim() !== '') {
             this.style.borderColor = '#28a745';
         }
@@ -318,11 +374,11 @@ scrollToTopBtn.addEventListener('click', () => {
 
 // Hover effect para cards de serviços
 document.querySelectorAll('.service-card').forEach(card => {
-    card.addEventListener('mouseenter', function() {
+    card.addEventListener('mouseenter', function () {
         this.style.transform = 'translateY(-10px) scale(1.02)';
     });
-    
-    card.addEventListener('mouseleave', function() {
+
+    card.addEventListener('mouseleave', function () {
         this.style.transform = 'translateY(0) scale(1)';
     });
 });
@@ -331,7 +387,7 @@ document.querySelectorAll('.service-card').forEach(card => {
 function typeWriter(element, text, speed = 100) {
     let i = 0;
     element.innerHTML = '';
-    
+
     function type() {
         if (i < text.length) {
             element.innerHTML += text.charAt(i);
@@ -339,7 +395,7 @@ function typeWriter(element, text, speed = 100) {
             setTimeout(type, speed);
         }
     }
-    
+
     type();
 }
 
@@ -354,19 +410,19 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Função para abrir WhatsApp com dados do formulário
+// Função para abrir WhatsApp com dados do formulário de orçamento
 function openWhatsApp() {
     const form = document.querySelector('.budget-form-content');
     const name = form.querySelector('input[type="text"]').value;
     const phone = form.querySelector('input[type="tel"]').value;
     const service = form.querySelector('select').value;
     const description = form.querySelector('textarea').value;
-    
+
     if (!name || !phone || !service || !description) {
         showNotification('Por favor, preencha todos os campos obrigatórios.', 'error');
         return;
     }
-    
+
     const message = `Olá! Gostaria de solicitar um orçamento para um projeto.
 
 Nome: ${name}
@@ -375,18 +431,97 @@ Tipo de Serviço: ${service}
 Descrição: ${description}
 
 Aguardo seu retorno!`;
-    
+
     const whatsappUrl = `https://wa.me/5584999263052?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
 }
 
+// Função para enviar dados do formulário de contato para WhatsApp
+function sendContactToWhatsApp() {
+    const form = document.getElementById('contactForm');
+
+    // Capturar dados da empresa
+    const razaoSocial = form.querySelector('input[name="razaoSocial"]').value;
+    const cnpj = form.querySelector('input[name="cnpj"]').value;
+    const responsavel = form.querySelector('input[name="responsavel"]').value;
+    const cargo = form.querySelector('input[name="cargo"]').value;
+
+    // Capturar dados de contato
+    const telefone = form.querySelector('input[name="telefone"]').value;
+    const email = form.querySelector('input[name="email"]').value;
+    const localizacao = form.querySelector('input[name="localizacao"]').value;
+
+    // Capturar serviços selecionados
+    const servicosCheckboxes = form.querySelectorAll('input[name="servicos"]:checked');
+    const servicos = Array.from(servicosCheckboxes).map(cb => cb.value);
+
+    // Capturar detalhes do projeto
+    const detalhes = form.querySelector('textarea[name="detalhes"]').value;
+    const prazo = form.querySelector('input[name="prazo"]').value;
+
+    // Validação básica
+    if (!razaoSocial || !cnpj || !responsavel || !cargo || !telefone || !email || !localizacao || servicos.length === 0 || !detalhes || !prazo) {
+        showNotification('Por favor, preencha todos os campos obrigatórios e selecione pelo menos um serviço.', 'error');
+        return;
+    }
+
+    // Formatar a data
+    const dataFormatada = new Date(prazo).toLocaleDateString('pt-BR');
+
+    // Formatar serviços para a mensagem
+    const servicosFormatados = servicos.map(servico => {
+        const nomes = {
+            'isolamento-termico': 'Isolamento Térmico',
+            'isolamento-acustico': 'Isolamento Acústico',
+            'protecao-passiva': 'Proteção Passiva',
+            'alpinismo-industrial': 'Alpinismo Industrial',
+            'pintura-industrial': 'Pintura Industrial',
+            'controle-vibracao': 'Controle de Vibração'
+        };
+        return nomes[servico] || servico;
+    }).map(s => `• ${s}`).join('\n');
+
+    // Criar a mensagem formatada
+    const message = `*NOVA SOLICITAÇÃO DE ORÇAMENTO* 📋
+
+*EMPRESA:*
+🏢 *Razão Social:* ${razaoSocial}
+📄 *CNPJ:* ${cnpj}
+👤 *Responsável:* ${responsavel}
+💼 *Cargo:* ${cargo}
+
+*CONTATOS:*
+📱 *Telefone:* ${telefone}
+📧 *E-mail:* ${email}
+📍 *Localização:* ${localizacao}
+
+*SERVIÇOS SOLICITADOS:*
+${servicosFormatados}
+
+*DETALHES DO PROJETO:*
+${detalhes}
+
+*PRAZO DESEJADO:*
+📅 ${dataFormatada}
+
+_Mensagem enviada automaticamente via formulário de orçamento_
+_Baracho Soluções e Serviços_`;
+
+    const whatsappUrl = `https://wa.me/5584999263052?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+
+    // Limpar formulário após envio
+    form.reset();
+    showNotification('Dados enviados para WhatsApp! Aguarde nosso retorno.', 'success');
+}
+
 // Modal para projetos do portfólio
 document.querySelectorAll('.portfolio-item').forEach(item => {
-    item.addEventListener('click', function() {
+    item.addEventListener('click', function () {
         const title = this.querySelector('h3').textContent;
         const description = this.querySelector('p').textContent;
         const image = this.querySelector('img').src;
-        
+
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.innerHTML = `
@@ -407,7 +542,7 @@ document.querySelectorAll('.portfolio-item').forEach(item => {
                 </div>
             </div>
         `;
-        
+
         modal.style.cssText = `
             position: fixed;
             top: 0;
@@ -421,7 +556,7 @@ document.querySelectorAll('.portfolio-item').forEach(item => {
             z-index: 2000;
             padding: 20px;
         `;
-        
+
         const modalContent = modal.querySelector('.modal-content');
         modalContent.style.cssText = `
             background: #111111;
@@ -434,28 +569,28 @@ document.querySelectorAll('.portfolio-item').forEach(item => {
             overflow-y: auto;
             color: #ffffff;
         `;
-        
+
         document.body.appendChild(modal);
-        
+
         // Prevenir scroll do body quando modal está aberto
         document.body.style.overflow = 'hidden';
-        
+
         // Fechar modal
         const closeModal = () => {
             document.body.removeChild(modal);
             document.body.style.overflow = '';
         };
-        
+
         // Função global para fechar modal
         window.closeModal = closeModal;
-        
+
         modal.querySelector('.btn-primary').addEventListener('click', closeModal);
         modal.addEventListener('click', (e) => {
             if (e.target === modal) closeModal();
         });
-        
+
         // Fechar modal com ESC
-        document.addEventListener('keydown', function(e) {
+        document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 closeModal();
             }
@@ -490,7 +625,7 @@ document.addEventListener('touchend', e => {
 function handleSwipe() {
     const swipeThreshold = 50;
     const diff = touchStartY - touchEndY;
-    
+
     if (Math.abs(diff) > swipeThreshold) {
         if (diff > 0) {
             // Swipe para cima - mostrar scroll to top
@@ -543,14 +678,14 @@ document.addEventListener('DOMContentLoaded', () => {
             button.setAttribute('aria-label', button.textContent.trim());
         }
     });
-    
+
     // Melhorar navegação por teclado
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Tab') {
             document.body.classList.add('keyboard-navigation');
         }
     });
-    
+
     document.addEventListener('mousedown', () => {
         document.body.classList.remove('keyboard-navigation');
     });
